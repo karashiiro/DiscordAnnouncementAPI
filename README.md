@@ -3,6 +3,7 @@ Exposes announcement-formatted messages for plugins in a Discord channel via an 
 
 ## Configuration
 `DANNOUNCEAPI_BOT_TOKEN` - Discord bot token.
+
 `DANNOUNCEAPI_CHANNELID` - The text channel to read from.
 
 ## Announcement format
