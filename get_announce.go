@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"os"
 	"strings"
@@ -19,32 +18,40 @@ func getAnnounce(client *discordgo.Session, ctx *gin.Context) {
 
 	announcements := make([]announcement, 0)
 	for _, m := range messages {
-		pluginInternalName := strings.Split(m.Content, "\n")[0]
-		if strings.Index(pluginInternalName, " ") == -1 {
-			log.Println("Malformed announcement (Message ID: " + m.ID + ")")
+		lines := strings.Split(m.Content, "\n")
+		if len(lines) <= 1 {
+			log.Println("malformed announcement, skipping... (Message ID: " + m.ID + ")")
+			continue
+		}
+
+		pluginInternalName := lines[0]
+		link := lines[len(lines)-1]
+		if !strings.HasPrefix(link, "http://") && !strings.HasPrefix(link, "https://") {
+			link = ""
+		}
+
+		channel, _ := client.State.Channel(os.Getenv("DANNOUNCEAPI_CHANNELID"))
+		member, err := client.GuildMember(channel.GuildID, m.Author.ID)
+		if err != nil {
+			log.Print("error:", err)
 			continue
 		}
 
 		announce := announcement{
-			Author:             m.Member.Nick,
-			Message:            m.Content[len(pluginInternalName)-1:],
+			Author: &author{
+				Nickname:  member.Nick,
+				Username:  m.Author.Username + "#" + m.Author.Discriminator,
+				AvatarURL: m.Author.AvatarURL(""),
+			},
+			Message:            strings.TrimSpace(m.Content[len(pluginInternalName) : len(m.Content)-len(link)]),
 			PluginInternalName: pluginInternalName,
-		}
-
-		if announce.Author == "" {
-			announce.Author = m.Author.Username
+			Link:               link,
 		}
 
 		announcements = append(announcements, announce)
 	}
 
-	payload, err := json.Marshal(announcements)
-	if err != nil {
-		log.Print("error:", err)
-		payload = []byte("[]")
-	}
-
 	ctx.JSON(200, gin.H{
-		"announce": string(payload),
+		"announce": announcements,
 	})
 }
