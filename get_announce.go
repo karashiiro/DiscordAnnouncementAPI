@@ -43,7 +43,7 @@ func getAnnounce(client *discordgo.Session, ctx *gin.Context) {
 			Author: &author{
 				Nickname:  member.Nick,
 				Username:  m.Author.Username + "#" + m.Author.Discriminator,
-				AvatarURL: m.Author.AvatarURL(""),
+				AvatarURL: m.Author.AvatarURL("64"),
 			},
 			Message:            strings.TrimSpace(m.Content[len(pluginInternalName) : len(m.Content)-len(link)]),
 			PluginInternalName: pluginInternalName,
