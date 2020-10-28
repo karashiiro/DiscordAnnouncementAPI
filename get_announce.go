@@ -10,7 +10,9 @@ import (
 )
 
 func getAnnounce(client *discordgo.Session, ctx *gin.Context) {
-	messages, err := client.ChannelMessages(os.Getenv("DANNOUNCEAPI_CHANNELID"), 100, "", "", "")
+	channelID := os.Getenv("DANNOUNCEAPI_CHANNELID")
+
+	messages, err := client.ChannelMessages(channelID, 100, "", "", "")
 	if err != nil {
 		log.Print(err)
 		return
@@ -30,7 +32,7 @@ func getAnnounce(client *discordgo.Session, ctx *gin.Context) {
 			link = ""
 		}
 
-		channel, _ := client.State.Channel(os.Getenv("DANNOUNCEAPI_CHANNELID"))
+		channel, _ := client.State.Channel(channelID)
 		member, err := client.GuildMember(channel.GuildID, m.Author.ID)
 		if err != nil {
 			log.Print("error:", err)
